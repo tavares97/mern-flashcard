@@ -1,3 +1,6 @@
+import { config } from "dotenv";
+config();
+
 import express, { Request, Response } from "express";
 import mongoose from "mongoose";
 
@@ -18,13 +21,9 @@ app.post("/decks", async (req: Request, res: Response) => {
   res.json(created);
 });
 
-mongoose
-  .connect(
-    "mongodb+srv://vacie:PQymIIJvhisATJBB@mern-db.448plpf.mongodb.net/test"
-  )
-  .then(() => {
-    console.log("DB CONNECTED");
-    app.listen(5000);
-  });
+mongoose.connect(process.env.MONGO_URL!).then(() => {
+  console.log(`DB CONNECTED TO PORT ${process.env.PORT!}`);
+  app.listen(process.env.PORT!);
+});
 
 //PQymIIJvhisATJBB
