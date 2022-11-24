@@ -8,8 +8,10 @@ type TDeck = {
 
 function App() {
   const [title, setTitle] = useState("");
-  const [decks, setDecks] = useState([]);
+  const [decks, setDecks] = useState<TDeck[]>([]);
 
+  /* It's a hook that runs when the component mounts. It's fetching the decks from the server and setting
+    the state. */
   useEffect(() => {
     const abortController = new AbortController();
 
@@ -24,17 +26,37 @@ function App() {
     return () => {
       abortController.abort();
     };
-  }, [decks]);
+  }, []);
 
+  /**
+   * It takes a deckId as an argument, and then it makes a DELETE request to the server, and then it
+   * filters the decks array to remove the deck with the matching id
+   * @param {string} deckId - string - the id of the deck to delete
+   */
+  async function deleteDeck(deckId: string) {
+    await fetch(`http://localhost:5000/decks/${deckId}`, {
+      method: "DELETE",
+    });
+
+    setDecks(decks.filter((deck: TDeck) => deck._id !== deckId));
+  }
+
+  /**
+   * We're creating a new deck by sending a POST request to the server, and then adding the new deck to
+   * the list of decks
+   * @param e - React.FormEvent - this is the event that is triggered when the form is submitted.
+   */
   async function createDeck(e: React.FormEvent) {
     e.preventDefault();
-    await fetch("http://localhost:5000/decks", {
+    const deck = await fetch("http://localhost:5000/decks", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ title }),
-    });
+    }).then((res) => res.json());
+
+    setDecks([...decks, deck]);
     setTitle("");
   }
 
@@ -45,8 +67,14 @@ function App() {
           {decks.map((deck: TDeck) => (
             <li
               key={deck._id}
-              className="h-32 rounded-md bg-orange-500 shadow-md flex items-center justify-center cursor-pointer text-white hover:bg-orange-600"
+              className="relative h-32 rounded-md bg-orange-500 shadow-md flex items-center justify-center cursor-pointer text-white hover:bg-orange-600"
             >
+              <button
+                className="absolute top-0 right-2"
+                onClick={() => deleteDeck(deck._id)}
+              >
+                X
+              </button>
               {deck.title}
             </li>
           ))}
@@ -66,6 +94,7 @@ function App() {
           <TextInput
             type="text"
             id="deck-title"
+            sizing="sm"
             value={title}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               setTitle(e.target.value);
@@ -73,7 +102,7 @@ function App() {
           />
         </div>
 
-        <button className="px-3 py-2 ml-3 mt-6 bg-orange-500 hover:bg-orange-600 text-white rounded-md">
+        <button className="p-1 rounded-md bg-orange-500 hover:bg-orange-600 text-white mt-6 ml-3">
           Create Deck
         </button>
       </form>
