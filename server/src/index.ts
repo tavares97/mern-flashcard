@@ -1,11 +1,16 @@
 import { config } from "dotenv";
 config();
 
-import express, { Request, Response } from "express";
+import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 
-import Deck from "./models/Deck";
+import { getDecksController } from "./controllers/getDecksController";
+import { createDeckController } from "./controllers/createDeckController";
+import { deleteDeckController } from "./controllers/deleteDeckController";
+import { createCardOrDeckController } from "./controllers/createCardOrDeckController";
+import { getDeckController } from "./controllers/getDeckController";
+import { deleteCardController } from "./controllers/deleteCardController";
 
 const app = express();
 
@@ -13,33 +18,13 @@ const app = express();
 app.use(cors({ origin: "http://localhost:5173" }));
 app.use(express.json());
 
-app.get("/decks", async (req: Request, res: Response) => {
-  //Gets decks from MongDB
-  const decks = await Deck.find();
-  //Returns the decks
-  res.json(decks);
-});
+app.get("/decks", getDecksController);
+app.post("/decks", createDeckController);
+app.delete("/decks/:deckId", deleteDeckController);
 
-app.post("/decks", async (req: Request, res: Response) => {
-  //Gets data from body and creates new instance of Deck
-  const newDeck = new Deck({
-    title: req.body.title,
-  });
-
-  //Saves new deck to MongoDB and returns
-  const created = await newDeck.save();
-  res.json(created);
-});
-
-app.delete("/decks/:deckId", async (req: Request, res: Response) => {
-  //Gets deck id from URL
-  const deckId = req.params.deckId;
-  //Finds id and deletes
-  await Deck.findByIdAndDelete(deckId);
-  res.json({
-    message: "Deck successfully deleted",
-  });
-});
+app.get("/decks/:deckId", getDeckController);
+app.post("/decks/:deckId/cards", createCardOrDeckController);
+app.delete("/decks/:deckId/cards/:index", deleteCardController);
 
 mongoose.connect(process.env.MONGO_URL!).then(() => {
   console.log(`DB CONNECTED TO PORT ${process.env.PORT!}`);

@@ -34,7 +34,6 @@ function App() {
    */
   async function handleDeleteDeck(deckId: string) {
     await deleteDeck(deckId);
-
     setDecks(decks.filter((deck: TDeck) => deck._id !== deckId));
   }
 
@@ -45,6 +44,8 @@ function App() {
    */
   async function handleCreateDeck(e: React.FormEvent) {
     e.preventDefault();
+    if (title === "") return;
+
     const deck = await createDeck(title);
     setDecks([...decks, deck]);
     setTitle("");
@@ -53,12 +54,11 @@ function App() {
   return (
     <div className="h-screen p-6">
       <div className="flex justify-center">
-        <ul className="grid grid-cols-3 w-[600px] gap-3">
+        <ul className="grid grid-cols-3 w-[500px] gap-3">
           {decks.map((deck: TDeck) => (
-            <Link
+            <li
               key={deck._id}
-              to={`decks/${deck._id}`}
-              className="relative h-32 rounded-md bg-orange-500 shadow-md flex items-center justify-center cursor-pointer text-white hover:bg-orange-600"
+              className="relative h-20 rounded-md bg-orange-500 shadow-md flex items-center justify-center cursor-pointer text-white hover:bg-orange-600"
             >
               <button
                 className="absolute top-0 right-2"
@@ -66,8 +66,8 @@ function App() {
               >
                 X
               </button>
-              {deck.title}
-            </Link>
+              <Link to={`decks/${deck._id}`}>{deck.title}</Link>
+            </li>
           ))}
         </ul>
       </div>
